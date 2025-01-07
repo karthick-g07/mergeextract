@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel File Merger</title>
+    {%load static%}
+    <link rel="stylesheet" href="{%static 'css/gg.css'%}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropZones = document.querySelectorAll('.drop-zone');
+
+            dropZones.forEach(zone => {
+                const input = zone.querySelector('input');
+
+                // Handle drag over
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+
+                // Handle drag leave
+                zone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                });
+
+                // Handle drop
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const files = e.dataTransfer.files;
+
+                    // Assign the files to the input
+                    if (files.length > 0) {
+                        input.files = files;
+                        zone.querySelector('p').textContent = `Selected file: ${files[0].name}`;
+                        zone.classList.add('file-selected');
+                    }
+                });
+
+                // Handle file selection through input
+                input.addEventListener('change', (e) => {
+                    const files = input.files;
+                    if (files.length > 0) {
+                        zone.querySelector('p').textContent = `Selected file: ${files[0].name}`;
+                        zone.classList.add('file-selected');
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Excel File Merger</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="drop-zone">
+            <p>Drag and drop Excel File 1 here or click to upload</p>
+            <input type="file" id="excel_file1" name="excel_file1" required>
+        </div>
+
+        <div class="drop-zone">
+            <p>Drag and drop Excel File 2 here or click to upload</p>
+            <input type="file" id="excel_file2" name="excel_file2" required>
+        </div>
+
+        <div class="drop-zone">
+            <p>Drag and drop Excel File 3 here or click to upload</p>
+            <input type="file" id="excel_file3" name="excel_file3" required>
+        </div>
+
+        <button type="submit">Merge and Extract Data</button>
+    </form>
+
+    {% if download_url %}
+        <h2>Merged File:</h2>
+        <a href="{{ download_url }}" download>Download Merged File</a>
+    {% endif %}
+
+    {% if extracted_url %}
+        <h2>Extracted Data File:</h2>
+        <a href="{{ extracted_url }}" download>Download Extracted File</a>
+    {% endif %}
+</body>
+</html>
