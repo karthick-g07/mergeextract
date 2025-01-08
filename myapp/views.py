@@ -1,5 +1,5 @@
 import openpyxl
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse
 import os
 from django.conf import settings
@@ -68,8 +68,43 @@ def home(request):
         extracted_file_path = os.path.join(settings.MEDIA_ROOT, 'extracted.xlsx')
         extracted_wb.save(extracted_file_path)
         extracted_url = f'{settings.MEDIA_URL}extracted.xlsx'
+        return redirect('about')
 
     return render(request, 'home.html', {'download_url': download_url, 'extracted_url': extracted_url})
-
+import pandas as pd
+import json
 def about(request):
-    return render(request, "about.html")
+    # Path to the extracted Excel file
+    merged_file_path = os.path.join(settings.MEDIA_ROOT, 'extracted.xlsx')
+
+    # Load the Excel file into a DataFrame
+    df = pd.read_excel(merged_file_path)
+    
+    # Convert DataFrame to a list of dictionaries
+    students = df.to_dict(orient='records')
+    valid=make_valid_identifier(students)
+    # Sort students by CGPA and SGPA
+    sorted_students = sorted(valid, key=lambda x: (x['cgpa'], x['sgpa']), reverse=True)
+
+    # Convert the sorted student data to JSON
+    students_json = json.dumps(sorted_students)
+    
+    # Pass the JSON data to the template
+    return render(request, 'about.html', {'students_json': students_json})
+
+import re
+
+def make_valid_identifier(data):
+    # Function to convert dictionary keys to valid Python identifiers
+    def convert_key(key):
+        # Convert to lowercase and replace spaces with underscores
+        key = key.strip().lower()
+        # Remove any characters that are not alphanumeric or underscores
+        key = re.sub(r'[^a-z0-9_]', '', key)
+        return key
+    
+    # Iterate over the list of dictionaries and convert keys for each dictionary
+    return [
+        {convert_key(k): v for k, v in student.items()} 
+        for student in data
+    ]

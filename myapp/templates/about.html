@@ -1,26 +1,65 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/gg.css' %}">
-    <title>Document</title>
-
-
-
+    <title>About Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <p id="pp">this is about page</p>
-    <div class="container">
-        <h1 class="text-center">Bootstrap is working!</h1>
-        <button class="btn btn-primary">Test Button</button>
-        <img src="{%static 'images/ee.jpg'%}" width="100" height="100">
-        <script src="{%static 'js/he.js'%}"></script>
-        <p onmouseenter="tt()">sfdsfdsf</p>
+    <h1>Student Data</h1>
 
-    </div>
+    <!-- Chart Container -->
+    <h2>SGPA and CGPA Chart</h2>
+    <canvas id="chart"></canvas>
+    
+    <!-- Include the students data as a JavaScript variable -->
+    <script type="application/json" id="students_data">
+        {{ students_json|safe }}
+    </script>
+
+    <script>
+        // Retrieve and parse the student data from the DOM element with the ID "students_data"
+        const studentsData = JSON.parse(document.getElementById('students_data').textContent);
+        
+        // Prepare data for the chart
+        const studentNames = studentsData.map(student => student.StudentName);
+        const sgpaData = studentsData.map(student => student.SGPA);
+        const cgpaData = studentsData.map(student => student.CGPA);
+
+        // Create the chart
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: studentNames,
+                datasets: [
+                    {
+                        label: 'SGPA',
+                        data: sgpaData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'CGPA',
+                        data: cgpaData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
